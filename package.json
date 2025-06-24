@@ -1,5 +1,5 @@
 {
-  "name": "bolt",
+  "name": "Legion AI",
   "description": "An AI Agent",
   "private": true,
   "license": "MIT",
@@ -7,8 +7,8 @@
   "type": "module",
   "version": "1.0.0",
   "author": {
-    "name": "bolt.diy team",
-    "email": "maintainers@bolt.diy"
+    "name": "Legion AI team",
+    "email": "legionuxd_dex@outlook.com"
   },
   "scripts": {
     "deploy": "npm run build && wrangler pages deploy",

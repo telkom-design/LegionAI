@@ -76,12 +76,12 @@ export const AvatarDropdown = ({ onSelectTab }: AvatarDropdownProps) => {
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            {/* <div className="flex-1 min-w-0">
               <div className="font-medium text-sm text-gray-900 dark:text-white truncate">
                 {profile?.username || 'Guest User'}
               </div>
               {profile?.bio && <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{profile.bio}</div>}
-            </div>
+            </div> */}
           </div>
 
           <DropdownMenu.Item
