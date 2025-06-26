@@ -1,5 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from '@nanostores/react';
+import { toast } from 'react-toastify';
 import { IconButton } from '~/components/ui/IconButton';
 import { workbenchStore } from '~/lib/stores/workbench';
 import { PortDropdown } from './PortDropdown';
@@ -660,6 +661,26 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
     }
   };
 
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'IFRAME_HTML') {
+        const html = event.data.html;
+        navigator.clipboard.writeText(html);
+        toast.success('Preview design copied to clipboard, you can paste it into Figma Plugin.')
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const handleCopyIframeInnerHTML = () => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage('REQUEST_IFRAME_HTML', '*');
+    }
+  };
+
   return (
     <div ref={containerRef} className={`w-full h-full flex flex-col relative`}>
       {isPortDropdownOpen && (
@@ -739,6 +760,11 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
               />
             </>
           )}
+          <IconButton
+            icon="i-ph:clipboard"
+            onClick={handleCopyIframeInnerHTML}
+            title="Copy HTML"
+          />
           <IconButton
             icon="i-ph:cursor-click"
             onClick={toggleInspectorMode}
