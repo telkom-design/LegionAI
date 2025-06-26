@@ -284,6 +284,11 @@
   window.addEventListener('message', function(event) {
     if (event.data.type === 'INSPECTOR_ACTIVATE') {
       setInspectorActive(event.data.active);
+    } else if (event.data === 'REQUEST_IFRAME_HTML') {
+      window.parent.postMessage({
+        type: 'IFRAME_HTML',
+        html: document.getElementById('root')?.parentElement?.parentElement?.outerHTML,
+      }, '*');
     }
   });
 
