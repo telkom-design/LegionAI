@@ -136,12 +136,15 @@ export const ChatImpl = memo(
     const supabaseAlert = useStore(workbenchStore.supabaseAlert);
     const { activeProviders, promptId, autoSelectTemplate, contextOptimizationEnabled } = useSettings();
     const [model, setModel] = useState(() => {
-      const savedModel = Cookies.get('selectedModel') || 'gpt-4o-mini';
+      const savedModel = Cookies.get('selectedModel');
       return savedModel || DEFAULT_MODEL;
     });
     const [provider, setProvider] = useState(() => {
-      const savedProvider = Cookies.get('selectedProvider') || 'OpenAILike';
-      return (PROVIDER_LIST.find((p) => p.name === savedProvider) || DEFAULT_PROVIDER) as ProviderInfo;
+      const savedProvider = Cookies.get('selectedProvider');
+      if (savedProvider) {
+        return (PROVIDER_LIST.find((p) => p.name === savedProvider ) || DEFAULT_PROVIDER) as ProviderInfo
+      }
+      return DEFAULT_PROVIDER as ProviderInfo;
     });
     const { showChat } = useStore(chatStore);
     const [animationScope, animate] = useAnimate();
