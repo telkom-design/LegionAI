@@ -36,6 +36,7 @@ import { StickToBottom, useStickToBottomContext } from '~/lib/hooks';
 import { ChatBox } from './ChatBox';
 import type { DesignScheme } from '~/types/design-scheme';
 import type { ElementInfo } from '~/components/workbench/Inspector';
+import { ImportFigmaButton } from './ImportFigmaButton';
 
 const TEXTAREA_MIN_HEIGHT = 76;
 
@@ -466,6 +467,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
             <div className="flex flex-col justify-center">
               {!chatStarted && (
                 <div className="flex justify-center gap-2">
+                  <ImportFigmaButton handleSendMessage={handleSendMessage} />
                   {ImportButtons(importChat)}
                   <GitCloneButton importChat={importChat} />
                 </div>
