@@ -19,7 +19,7 @@ export async function openDatabase(): Promise<IDBDatabase | undefined> {
   }
 
   return new Promise((resolve) => {
-    const request = indexedDB.open('boltHistory', 2);
+    const request = indexedDB.open('boltHistory', 3);
 
     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
       const db = (event.target as IDBOpenDBRequest).result;
@@ -162,6 +162,41 @@ export async function deleteById(db: IDBDatabase, id: string): Promise<void> {
     transaction.oncomplete = () => {
       // This might resolve before checkCompletion if one operation finishes much faster
     };
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+export async function deleteAll(db: IDBDatabase): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['chats', 'snapshots'], 'readwrite');
+    const chatStore = transaction.objectStore('chats');
+    const snapshotStore = transaction.objectStore('snapshots');
+
+    const clearChatsRequest = chatStore.clear();
+    const clearSnapshotsRequest = snapshotStore.clear();
+
+    let chatsCleared = false;
+    let snapshotsCleared = false;
+
+    const checkCompletion = () => {
+      if (chatsCleared && snapshotsCleared) {
+        console.log('All chat history and snapshots have been deleted');
+        resolve();
+      }
+    };
+
+    clearChatsRequest.onsuccess = () => {
+      chatsCleared = true;
+      checkCompletion();
+    };
+    clearChatsRequest.onerror = () => reject(clearChatsRequest.error);
+
+    clearSnapshotsRequest.onsuccess = () => {
+      snapshotsCleared = true;
+      checkCompletion();
+    };
+    clearSnapshotsRequest.onerror = () => reject(clearSnapshotsRequest.error);
+
     transaction.onerror = () => reject(transaction.error);
   });
 }

@@ -82,6 +82,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 import { logStore } from './lib/stores/logs';
+import { AuthWrapper } from './components/auth/AuthWrapper';
 
 export default function App() {
   const theme = useStore(themeStore);
@@ -97,7 +98,22 @@ export default function App() {
 
   return (
     <Layout>
-      <Outlet />
+      <ClientOnly
+        fallback={
+          <div className="flex items-center justify-center min-h-screen bg-bolt-elements-background-depth-1">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-bolt-elements-textSecondary">Loading Legion AI...</p>
+            </div>
+          </div>
+        }
+      >
+        {() => (
+          <AuthWrapper>
+            <Outlet />
+          </AuthWrapper>
+        )}
+      </ClientOnly>
     </Layout>
   );
 }
