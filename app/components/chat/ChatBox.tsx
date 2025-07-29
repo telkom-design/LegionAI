@@ -18,6 +18,7 @@ import type { ProviderInfo } from '~/types/model';
 import { ColorSchemeDialog } from '~/components/ui/ColorSchemeDialog';
 import type { DesignScheme } from '~/types/design-scheme';
 import type { ElementInfo } from '~/components/workbench/Inspector';
+import { McpTools } from './MCPTools';
 
 interface ChatBoxProps {
   isModelSettingsCollapsed: boolean;
@@ -166,7 +167,12 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
         </div>
       )}
       <div
-        className={classNames('relative shadow-xs border border-bolt-elements-borderColor backdrop-blur rounded-lg')}
+        className={classNames(
+          'relative shadow-xs border border-bolt-elements-borderColor backdrop-blur rounded-lg',
+          {
+            'bg-white dark:bg-bolt-elements-background-depth-4': !props.isStreaming,
+          }
+        )}
       >
         <textarea
           ref={props.textareaRef}
@@ -235,8 +241,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             minHeight: props.TEXTAREA_MIN_HEIGHT,
             maxHeight: props.TEXTAREA_MAX_HEIGHT,
           }}
-          placeholder={props.chatMode === 'build' ? 'How can Bolt help you today?' : 'What would you like to discuss?'}
+          placeholder={props.chatMode === 'build' ? 'How can Legion help you today?' : 'What would you like to discuss?'}
           translate="no"
+          disabled={props.isStreaming}
         />
         <ClientOnly>
           {() => (
@@ -260,6 +267,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
         <div className="flex justify-between items-center text-sm p-4 pt-2">
           <div className="flex gap-1 items-center">
             <ColorSchemeDialog designScheme={props.designScheme} setDesignScheme={props.setDesignScheme} />
+            <McpTools />
             <IconButton title="Upload file" className="transition-all" onClick={() => props.handleFileUpload()}>
               <div className="i-ph:paperclip text-xl"></div>
             </IconButton>
