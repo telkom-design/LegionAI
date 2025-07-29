@@ -4,13 +4,16 @@ import { chatStore } from '~/lib/stores/chat';
 import { classNames } from '~/utils/classNames';
 import { HeaderActionButtons } from './HeaderActionButtons.client';
 import { ChatDescription } from '~/lib/persistence/ChatDescription.client';
+import { UserProfile } from '../auth';
+import { useAuth } from '~/lib/auth/AuthContext';
 
 export function Header() {
   const chat = useStore(chatStore);
+  const { user } = useAuth();
 
   return (
     <header
-      className={classNames('flex items-center px-4 border-b h-[var(--header-height)]', {
+      className={classNames('flex items-center justify-between gap-4 px-4 border-b h-[var(--header-height)]', {
         'border-transparent': !chat.started,
         'border-bolt-elements-borderColor': chat.started,
       })}
@@ -35,6 +38,11 @@ export function Header() {
               </div>
             )}
           </ClientOnly>
+        </>
+      )}
+      {user && (
+        <>
+          <ClientOnly>{() => <UserProfile />}</ClientOnly>
         </>
       )}
     </header>
