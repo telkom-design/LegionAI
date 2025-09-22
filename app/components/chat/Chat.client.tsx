@@ -1,10 +1,6 @@
-/*
- * @ts-nocheck
- * Preventing TS checks with files presented in the video for a better presentation.
- */
 import { useStore } from '@nanostores/react';
 import type { Message } from 'ai';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { useAnimate } from 'framer-motion';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { cssTransition, toast, ToastContainer } from 'react-toastify';
@@ -29,6 +25,9 @@ import { filesToArtifacts } from '~/utils/fileUtils';
 import { supabaseConnection } from '~/lib/stores/supabase';
 import { defaultDesignScheme, type DesignScheme } from '~/types/design-scheme';
 import type { ElementInfo } from '~/components/workbench/Inspector';
+import type { TextUIPart, FileUIPart, Attachment } from '@ai-sdk/ui-utils';
+import { useMCPStore } from '~/lib/stores/mcp';
+import type { LlmErrorAlertType } from '~/types/actions';
 
 const toastAnimation = cssTransition({
   enter: 'animated fadeInRight',
@@ -129,12 +128,13 @@ export const ChatImpl = memo(
     const [designScheme, setDesignScheme] = useState<DesignScheme>(defaultDesignScheme);
     const actionAlert = useStore(workbenchStore.alert);
     const deployAlert = useStore(workbenchStore.deployAlert);
-    const supabaseConn = useStore(supabaseConnection); // Add this line to get Supabase connection
+    const supabaseConn = useStore(supabaseConnection);
     const selectedProject = supabaseConn.stats?.projects?.find(
       (project) => project.id === supabaseConn.selectedProjectId,
     );
     const supabaseAlert = useStore(workbenchStore.supabaseAlert);
     const { activeProviders, promptId, autoSelectTemplate, contextOptimizationEnabled } = useSettings();
+    const [llmErrorAlert, setLlmErrorAlert] = useState<LlmErrorAlertType | undefined>(undefined);
     const [model, setModel] = useState(() => {
       const savedModel = Cookies.get('selectedModel');
       return savedModel || DEFAULT_MODEL;
@@ -151,6 +151,8 @@ export const ChatImpl = memo(
     const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
     const [chatMode, setChatMode] = useState<'discuss' | 'build'>('build');
     const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null);
+    const mcpSettings = useMCPStore((state) => state.settings);
+
     const {
       messages,
       isLoading,
@@ -164,6 +166,7 @@ export const ChatImpl = memo(
       error,
       data: chatData,
       setData,
+      addToolResult,
     } = useChat({
       api: '/api/chat',
       body: {
@@ -181,18 +184,12 @@ export const ChatImpl = memo(
             anonKey: supabaseConn?.credentials?.anonKey,
           },
         },
+        maxLLMSteps: mcpSettings.maxLLMSteps,
       },
       sendExtraMessageFields: true,
       onError: (e) => {
-        logger.error('Request failed\n\n', e, error);
-        logStore.logError('Chat request failed', e, {
-          component: 'Chat',
-          action: 'request',
-          error: e.message,
-        });
-        toast.error(
-          'There was an error processing your request: ' + (e.message ? e.message : 'No details were returned'),
-        );
+        setFakeLoading(false);
+        handleError(e, 'chat');
       },
       onFinish: (message, response) => {
         const usage = response.usage;
@@ -225,12 +222,7 @@ export const ChatImpl = memo(
         runAnimation();
         append({
           role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${prompt}`,
-            },
-          ] as any, // Type assertion to bypass compiler check
+          content: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${prompt}`,
         });
       }
     }, [model, provider, searchParams]);
@@ -275,6 +267,80 @@ export const ChatImpl = memo(
       });
     };
 
+    const handleError = useCallback(
+      (error: any, context: 'chat' | 'template' | 'llmcall' = 'chat') => {
+        logger.error(`${context} request failed`, error);
+
+        stop();
+        setFakeLoading(false);
+
+        let errorInfo = {
+          message: 'An unexpected error occurred',
+          isRetryable: true,
+          statusCode: 500,
+          provider: provider.name,
+          type: 'unknown' as const,
+          retryDelay: 0,
+        };
+
+        if (error.message) {
+          try {
+            const parsed = JSON.parse(error.message);
+
+            if (parsed.error || parsed.message) {
+              errorInfo = { ...errorInfo, ...parsed };
+            } else {
+              errorInfo.message = error.message;
+            }
+          } catch {
+            errorInfo.message = error.message;
+          }
+        }
+
+        let errorType: LlmErrorAlertType['errorType'] = 'unknown';
+        let title = 'Request Failed';
+
+        if (errorInfo.statusCode === 401 || errorInfo.message.toLowerCase().includes('api key')) {
+          errorType = 'authentication';
+          title = 'Authentication Error';
+        } else if (errorInfo.statusCode === 429 || errorInfo.message.toLowerCase().includes('rate limit')) {
+          errorType = 'rate_limit';
+          title = 'Rate Limit Exceeded';
+        } else if (errorInfo.message.toLowerCase().includes('quota')) {
+          errorType = 'quota';
+          title = 'Quota Exceeded';
+        } else if (errorInfo.statusCode >= 500) {
+          errorType = 'network';
+          title = 'Server Error';
+        }
+
+        logStore.logError(`${context} request failed`, error, {
+          component: 'Chat',
+          action: 'request',
+          error: errorInfo.message,
+          context,
+          retryable: errorInfo.isRetryable,
+          errorType,
+          provider: provider.name,
+        });
+
+        // Create API error alert
+        setLlmErrorAlert({
+          type: 'error',
+          title,
+          description: errorInfo.message,
+          provider: provider.name,
+          errorType,
+        });
+        setData([]);
+      },
+      [provider.name, stop],
+    );
+
+    const clearApiErrorAlert = useCallback(() => {
+      setLlmErrorAlert(undefined);
+    }, []);
+
     useEffect(() => {
       const textarea = textareaRef.current;
 
@@ -301,6 +367,59 @@ export const ChatImpl = memo(
       chatStore.setKey('started', true);
 
       setChatStarted(true);
+    };
+
+    // Helper function to create message parts array from text and images
+    const createMessageParts = (text: string, images: string[] = []): Array<TextUIPart | FileUIPart> => {
+      // Create an array of properly typed message parts
+      const parts: Array<TextUIPart | FileUIPart> = [
+        {
+          type: 'text',
+          text,
+        },
+      ];
+
+      // Add image parts if any
+      images.forEach((imageData) => {
+        // Extract correct MIME type from the data URL
+        const mimeType = imageData.split(';')[0].split(':')[1] || 'image/jpeg';
+
+        // Create file part according to AI SDK format
+        parts.push({
+          type: 'file',
+          mimeType,
+          data: imageData.replace(/^data:image\/[^;]+;base64,/, ''),
+        });
+      });
+
+      return parts;
+    };
+
+    // Helper function to convert File[] to Attachment[] for AI SDK
+    const filesToAttachments = async (files: File[]): Promise<Attachment[] | undefined> => {
+      if (files.length === 0) {
+        return undefined;
+      }
+
+      const attachments = await Promise.all(
+        files.map(
+          (file) =>
+            new Promise<Attachment>((resolve) => {
+              const reader = new FileReader();
+
+              reader.onloadend = () => {
+                resolve({
+                  name: file.name,
+                  contentType: file.type,
+                  url: reader.result as string,
+                });
+              };
+              reader.readAsDataURL(file);
+            }),
+        ),
+      );
+
+      return attachments;
     };
 
     const sendMessage = async (_event: React.UIEvent, messageInput?: string) => {
@@ -349,20 +468,14 @@ export const ChatImpl = memo(
 
             if (temResp) {
               const { assistantMessage, userMessage } = temResp;
+              const userMessageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`;
+
               setMessages([
                 {
                   id: `1-${new Date().getTime()}`,
                   role: 'user',
-                  content: [
-                    {
-                      type: 'text',
-                      text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`,
-                    },
-                    ...imageDataList.map((imageData) => ({
-                      type: 'image',
-                      image: imageData,
-                    })),
-                  ] as any,
+                  content: userMessageText,
+                  parts: createMessageParts(userMessageText, imageDataList),
                 },
                 {
                   id: `2-${new Date().getTime()}`,
@@ -376,7 +489,13 @@ export const ChatImpl = memo(
                   annotations: ['hidden'],
                 },
               ]);
-              reload();
+
+              const reloadOptions =
+                uploadedFiles.length > 0
+                  ? { experimental_attachments: await filesToAttachments(uploadedFiles) }
+                  : undefined;
+
+              reload(reloadOptions);
               setInput('');
               Cookies.remove(PROMPT_COOKIE_KEY);
 
@@ -394,23 +513,19 @@ export const ChatImpl = memo(
         }
 
         // If autoSelectTemplate is disabled or template selection failed, proceed with normal message
+        const userMessageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`;
+        const attachments = uploadedFiles.length > 0 ? await filesToAttachments(uploadedFiles) : undefined;
+
         setMessages([
           {
             id: `${new Date().getTime()}`,
             role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`,
-              },
-              ...imageDataList.map((imageData) => ({
-                type: 'image',
-                image: imageData,
-              })),
-            ] as any,
+            content: userMessageText,
+            parts: createMessageParts(userMessageText, imageDataList),
+            experimental_attachments: attachments,
           },
         ]);
-        reload();
+        reload(attachments ? { experimental_attachments: attachments } : undefined);
         setFakeLoading(false);
         setInput('');
         Cookies.remove(PROMPT_COOKIE_KEY);
@@ -435,35 +550,35 @@ export const ChatImpl = memo(
 
       if (modifiedFiles !== undefined) {
         const userUpdateArtifact = filesToArtifacts(modifiedFiles, `${Date.now()}`);
-        append({
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${userUpdateArtifact}${finalMessageContent}`,
-            },
-            ...imageDataList.map((imageData) => ({
-              type: 'image',
-              image: imageData,
-            })),
-          ] as any,
-        });
+        const messageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${userUpdateArtifact}${finalMessageContent}`;
+
+        const attachmentOptions =
+          uploadedFiles.length > 0 ? { experimental_attachments: await filesToAttachments(uploadedFiles) } : undefined;
+
+        append(
+          {
+            role: 'user',
+            content: messageText,
+            parts: createMessageParts(messageText, imageDataList),
+          },
+          attachmentOptions,
+        );
 
         workbenchStore.resetAllFileModifications();
       } else {
-        append({
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`,
-            },
-            ...imageDataList.map((imageData) => ({
-              type: 'image',
-              image: imageData,
-            })),
-          ] as any,
-        });
+        const messageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`;
+
+        const attachmentOptions =
+          uploadedFiles.length > 0 ? { experimental_attachments: await filesToAttachments(uploadedFiles) } : undefined;
+
+        append(
+          {
+            role: 'user',
+            content: messageText,
+            parts: createMessageParts(messageText, imageDataList),
+          },
+          attachmentOptions,
+        );
       }
 
       setInput('');
@@ -574,6 +689,8 @@ export const ChatImpl = memo(
         clearSupabaseAlert={() => workbenchStore.clearSupabaseAlert()}
         deployAlert={deployAlert}
         clearDeployAlert={() => workbenchStore.clearDeployAlert()}
+        llmErrorAlert={llmErrorAlert}
+        clearLlmErrorAlert={clearApiErrorAlert}
         data={chatData}
         chatMode={chatMode}
         setChatMode={setChatMode}
@@ -582,6 +699,7 @@ export const ChatImpl = memo(
         setDesignScheme={setDesignScheme}
         selectedElement={selectedElement}
         setSelectedElement={setSelectedElement}
+        addToolResult={addToolResult}
       />
     );
   },

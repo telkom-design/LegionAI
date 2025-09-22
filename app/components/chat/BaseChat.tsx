@@ -22,13 +22,12 @@ import type { ProviderInfo } from '~/types/model';
 // import StarterTemplates from './StarterTemplates';
 
 import StarterKits from './StarterKits';
-import type { ActionAlert, SupabaseAlert, DeployAlert } from '~/types/actions';
+import type { ActionAlert, SupabaseAlert, DeployAlert, LlmErrorAlertType } from '~/types/actions';
 import DeployChatAlert from '~/components/deploy/DeployAlert';
 import ChatAlert from './ChatAlert';
 import type { ModelInfo } from '~/lib/modules/llm/types';
 import ProgressCompilation from './ProgressCompilation';
 import type { ProgressAnnotation } from '~/types/context';
-import type { ActionRunner } from '~/lib/runtime/action-runner';
 import { SupabaseChatAlert } from '~/components/chat/SupabaseAlert';
 import { expoUrlAtom } from '~/lib/stores/qrCodeStore';
 import { useStore } from '@nanostores/react';
@@ -36,6 +35,7 @@ import { StickToBottom, useStickToBottomContext } from '~/lib/hooks';
 import { ChatBox } from './ChatBox';
 import type { DesignScheme } from '~/types/design-scheme';
 import type { ElementInfo } from '~/components/workbench/Inspector';
+import LlmErrorAlert from './LLMApiAlert';
 import { ImportFigmaButton } from './ImportFigmaButton';
 
 const TEXTAREA_MIN_HEIGHT = 76;
@@ -74,8 +74,9 @@ interface BaseChatProps {
   clearSupabaseAlert?: () => void;
   deployAlert?: DeployAlert;
   clearDeployAlert?: () => void;
+  llmErrorAlert?: LlmErrorAlertType;
+  clearLlmErrorAlert?: () => void;
   data?: JSONValue[] | undefined;
-  actionRunner?: ActionRunner;
   chatMode?: 'discuss' | 'build';
   setChatMode?: (mode: 'discuss' | 'build') => void;
   append?: (message: Message) => void;
@@ -83,6 +84,7 @@ interface BaseChatProps {
   setDesignScheme?: (scheme: DesignScheme) => void;
   selectedElement?: ElementInfo | null;
   setSelectedElement?: (element: ElementInfo | null) => void;
+  addToolResult?: ({ toolCallId, result }: { toolCallId: string; result: any }) => void;
 }
 
 export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
@@ -119,8 +121,9 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       clearDeployAlert,
       supabaseAlert,
       clearSupabaseAlert,
+      llmErrorAlert,
+      clearLlmErrorAlert,
       data,
-      actionRunner,
       chatMode,
       setChatMode,
       append,
@@ -128,6 +131,9 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       setDesignScheme,
       selectedElement,
       setSelectedElement,
+      addToolResult = () => {
+        throw new Error('addToolResult not implemented');
+      },
     },
     ref,
   ) => {
@@ -376,6 +382,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                         setChatMode={setChatMode}
                         provider={provider}
                         model={model}
+                        addToolResult={addToolResult}
                       />
                     ) : null;
                   }}
@@ -418,6 +425,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                       }}
                     />
                   )}
+                  {llmErrorAlert && <LlmErrorAlert alert={llmErrorAlert} clearAlert={() => clearLlmErrorAlert?.()} />}
                 </div>
                 {progressAnnotations && <ProgressCompilation data={progressAnnotations} />}
                 <ChatBox
@@ -489,12 +497,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
           </div>
           <ClientOnly>
             {() => (
-              <Workbench
-                actionRunner={actionRunner ?? ({} as ActionRunner)}
-                chatStarted={chatStarted}
-                isStreaming={isStreaming}
-                setSelectedElement={setSelectedElement}
-              />
+              <Workbench chatStarted={chatStarted} isStreaming={isStreaming} setSelectedElement={setSelectedElement} />
             )}
           </ClientOnly>
         </div>
