@@ -18,7 +18,7 @@ function initStore() {
     const persistedTheme = localStorage.getItem(kTheme) as Theme | undefined;
     const themeAttribute = document.querySelector('html')?.getAttribute('data-theme');
 
-    return persistedTheme ?? DEFAULT_THEME  ?? (themeAttribute as Theme);
+    return persistedTheme ?? DEFAULT_THEME ?? (themeAttribute as Theme);
   }
 
   return DEFAULT_THEME;

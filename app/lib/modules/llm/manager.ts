@@ -199,8 +199,10 @@ export class LLMManager {
 
   getDefaultProvider(): BaseProvider {
     const defaultProviderName = this._env.VITE_DEFAULT_PROVIDER;
+
     if (defaultProviderName) {
       const provider = this._providers.get(defaultProviderName);
+
       if (provider) {
         return provider;
       }
