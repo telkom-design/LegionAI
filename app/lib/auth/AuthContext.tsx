@@ -16,9 +16,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 };
 
@@ -35,7 +37,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Only run authentication logic on the client side
-    if (!isClient) return;
+    if (!isClient) {
+      return;
+    }
 
     // Use the helper to handle redirect promise
     MSALAuthHelper.handleRedirectPromise()
@@ -49,8 +53,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [instance, isClient]);
 
   const login = async () => {
-    if (!isClient) return;
-    
+    if (!isClient) {
+      return;
+    }
+
     try {
       await MSALAuthHelper.safeLogin(loginRequest);
     } catch (error) {
@@ -59,14 +65,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    if (!isClient) return;
+    if (!isClient) {
+      return;
+    }
 
     try {
       const logoutRequest = {
         postLogoutRedirectUri: window.location.origin,
         mainWindowRedirectUri: window.location.origin,
       };
-      
+
       await MSALAuthHelper.safeLogout(logoutRequest);
     } catch (error) {
       console.error('Logout error:', error);

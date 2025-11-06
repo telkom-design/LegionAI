@@ -5,9 +5,9 @@ export const msalConfig: Configuration = {
   auth: {
     clientId: import.meta.env.VITE_AZURE_CLIENT_ID,
     authority: `https://login.microsoftonline.com/${import.meta.env.VITE_AZURE_TENANT_ID}`,
-    redirectUri: import.meta.env.VITE_AZURE_REDIRECT_URI || (typeof window !== 'undefined' 
-      ? window.location.origin 
-      : 'http://localhost:5173'),
+    redirectUri:
+      import.meta.env.VITE_AZURE_REDIRECT_URI ||
+      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'),
     navigateToLoginRequestUrl: false,
   },
   cache: {
@@ -21,6 +21,7 @@ export const msalConfig: Configuration = {
         if (containsPii) {
           return;
         }
+
         switch (level) {
           case 0: // Error
             console.error(`MSAL Error: ${message}`);

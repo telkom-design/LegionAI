@@ -4,7 +4,7 @@ import { chatStore } from '~/lib/stores/chat';
 import { classNames } from '~/utils/classNames';
 import { HeaderActionButtons } from './HeaderActionButtons.client';
 import { ChatDescription } from '~/lib/persistence/ChatDescription.client';
-import { UserProfile } from '../auth';
+import { UserProfile } from '~/components/auth';
 import { useAuth } from '~/lib/auth/AuthContext';
 import { toggleSidebar } from '~/lib/stores/ui';
 

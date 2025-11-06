@@ -13,7 +13,6 @@ import { binDates } from './date-binning';
 import { useSearchFilter } from '~/lib/hooks/useSearchFilter';
 import { classNames } from '~/utils/classNames';
 import { useStore } from '@nanostores/react';
-import { profileStore } from '~/lib/stores/profile';
 import { sidebarOpen, openSidebar, closeSidebar } from '~/lib/stores/ui';
 
 const menuVariants = {
@@ -71,7 +70,6 @@ export const Menu = () => {
   const open = useStore(sidebarOpen);
   const [dialogContent, setDialogContent] = useState<DialogContent>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const profile = useStore(profileStore);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
