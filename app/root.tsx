@@ -1,6 +1,7 @@
 import { useStore } from '@nanostores/react';
 import type { LinksFunction } from '@remix-run/cloudflare';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
+import { json, type LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from '@remix-run/react';
 import tailwindReset from '@unocss/reset/tailwind-compat.css?url';
 import { themeStore } from './lib/stores/theme';
 import { stripIndents } from './utils/stripIndent';
@@ -9,6 +10,8 @@ import { useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ClientOnly } from 'remix-utils/client-only';
+import { getUserFromRequest } from './lib/auth/session.server';
+import { LoginPage } from './components/auth/LoginPage';
 
 import reactToastifyStyles from 'react-toastify/dist/ReactToastify.css?url';
 import globalStyles from './styles/index.scss?url';
@@ -82,10 +85,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 import { logStore } from './lib/stores/logs';
-import { AuthWrapper } from './components/auth/AuthWrapper';
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const { isAuthenticated, user } = await getUserFromRequest(request);
+  return json({ isAuthenticated, user });
+}
 
 export default function App() {
   const theme = useStore(themeStore);
+  const data = useLoaderData<typeof loader>();
 
   useEffect(() => {
     logStore.logSystem('Application initialized', {
@@ -108,11 +116,7 @@ export default function App() {
           </div>
         }
       >
-        {() => (
-          <AuthWrapper>
-            <Outlet />
-          </AuthWrapper>
-        )}
+        {() => (data?.isAuthenticated ? <Outlet /> : <LoginPage />)}
       </ClientOnly>
     </Layout>
   );
