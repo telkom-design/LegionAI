@@ -1,24 +1,25 @@
 import { useState } from 'react';
-import { useAuth } from '~/lib/auth/AuthContext';
+import { useUser } from '~/lib/auth/useUser';
 import { Button } from '~/components/ui';
 import { db, deleteAll } from '~/lib/persistence';
 import { toast } from 'react-toastify';
 
 export const UserProfile = () => {
-  const { user, logout } = useAuth();
+  const user = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   if (!user) {
     return null;
   }
 
-  const displayName = user.name || user.username || 'User';
+  const displayName = user.name || user.preferred_username || user.email || 'User';
   const initials = displayName
     .split(' ')
     .map((n) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
+  const username = user.preferred_username || user.email || '';
 
   return (
     <div className="relative">
@@ -42,17 +43,22 @@ export const UserProfile = () => {
           <div className="absolute right-0 top-full mt-2 w-48 bg-bolt-elements-background-depth-2 border border-bolt-elements-borderColor rounded-lg shadow-lg z-20">
             <div className="p-3 border-b border-bolt-elements-borderColor">
               <div className="font-medium text-bolt-elements-textPrimary text-sm truncate">{displayName}</div>
-              <div className="text-xs text-bolt-elements-textSecondary truncate">{user.username}</div>
+              <div className="text-xs text-bolt-elements-textSecondary truncate">{username}</div>
             </div>
             <div className="p-1">
               <Button
-                onClick={() => {
+                onClick={async () => {
                   if (db) {
                     deleteAll(db);
                     toast.success('All data cleared successfully');
                   }
 
-                  logout();
+                  if (window.auth?.logout) {
+                    await window.auth.logout();
+                  } else {
+                    window.location.href = '/auth/logout';
+                  }
+
                   setIsMenuOpen(false);
                 }}
                 className="w-full text-left px-3 py-2 text-sm text-bolt-elements-textPrimary hover:bg-bolt-elements-background-depth-3 rounded transition-colors"

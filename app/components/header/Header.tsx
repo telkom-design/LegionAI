@@ -5,12 +5,12 @@ import { classNames } from '~/utils/classNames';
 import { HeaderActionButtons } from './HeaderActionButtons.client';
 import { ChatDescription } from '~/lib/persistence/ChatDescription.client';
 import { UserProfile } from '~/components/auth';
-import { useAuth } from '~/lib/auth/AuthContext';
+import { useUser } from '~/lib/auth/useUser';
 import { toggleSidebar } from '~/lib/stores/ui';
 
 export function Header() {
   const chat = useStore(chatStore);
-  const { user } = useAuth();
+  const user = useUser();
 
   return (
     <header
@@ -35,7 +35,7 @@ export function Header() {
           <img src="/logo-dark-styled.png" alt="logo" className="w-[120px] inline-block hidden dark:block" />
         </a>
       </div>
-      {chat.started && ( // Display ChatDescription and HeaderActionButtons only when the chat has started.
+      {chat.started && (
         <>
           <span className="flex-1 px-4 truncate text-center text-bolt-elements-textPrimary">
             <ClientOnly>{() => <ChatDescription />}</ClientOnly>
