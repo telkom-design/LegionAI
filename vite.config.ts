@@ -8,6 +8,10 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+const allowedHosts: string[] = [process.env.VITE_BASE_URL, 'generator.digitaltelkom.id']
+  .filter((h): h is string => typeof h === 'string' && h.length > 0)
+  .map((h) => h.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, ''));
+
 export default defineConfig((config) => {
   return {
     define: {
@@ -15,6 +19,16 @@ export default defineConfig((config) => {
     },
     build: {
       target: 'esnext',
+    },
+    server: {
+      host: '0.0.0.0',
+      port: 5173,
+      strictPort: true,
+      allowedHosts,
+      hmr: {
+        clientPort: 5173,
+        host: process.env.VITE_BASE_URL || 'localhost',
+      },
     },
     plugins: [
       nodePolyfills({
@@ -60,6 +74,7 @@ export default defineConfig((config) => {
       'OLLAMA_API_BASE_URL',
       'LMSTUDIO_API_BASE_URL',
       'TOGETHER_API_BASE_URL',
+      'MIDAS_API_BASE_URL',
     ],
     css: {
       preprocessorOptions: {
@@ -76,7 +91,7 @@ function chrome129IssuePlugin() {
     name: 'chrome129IssuePlugin',
     configureServer(server: ViteDevServer) {
       server.middlewares.use((req, res, next) => {
-        const raw = req.headers['user-agent']?.match(/Chrom(e|ium)\/([0-9]+)\./);
+        const raw = req.headers['user-agent']?.match(/Chrom(e|ium)\/([0-9])\./);
 
         if (raw) {
           const version = parseInt(raw[2], 10);
