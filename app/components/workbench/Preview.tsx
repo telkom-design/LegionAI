@@ -666,7 +666,7 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
       if (event.data.type === 'IFRAME_HTML') {
         const html = event.data.html;
         navigator.clipboard.writeText(html);
-        toast.success('Preview design copied to clipboard, you can paste it into Figma Plugin.')
+        toast.success('Preview design copied to clipboard, you can paste it into Figma Plugin.');
       }
     };
 
@@ -760,11 +760,7 @@ export const Preview = memo(({ setSelectedElement }: PreviewProps) => {
               />
             </>
           )}
-          <IconButton
-            icon="i-ph:clipboard"
-            onClick={handleCopyIframeInnerHTML}
-            title="Copy HTML"
-          />
+          <IconButton icon="i-ph:clipboard" onClick={handleCopyIframeInnerHTML} title="Copy HTML" />
           <IconButton
             icon="i-ph:cursor-click"
             onClick={toggleInspectorMode}

@@ -167,12 +167,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
         </div>
       )}
       <div
-        className={classNames(
-          'relative shadow-xs border border-bolt-elements-borderColor backdrop-blur rounded-lg',
-          {
-            'bg-white dark:bg-bolt-elements-background-depth-4': !props.isStreaming,
-          }
-        )}
+        className={classNames('relative shadow-xs border border-bolt-elements-borderColor backdrop-blur rounded-lg', {
+          'bg-white dark:bg-bolt-elements-background-depth-4': !props.isStreaming,
+        })}
       >
         <textarea
           ref={props.textareaRef}
@@ -241,7 +238,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             minHeight: props.TEXTAREA_MIN_HEIGHT,
             maxHeight: props.TEXTAREA_MAX_HEIGHT,
           }}
-          placeholder={props.chatMode === 'build' ? 'How can Legion help you today?' : 'What would you like to discuss?'}
+          placeholder={
+            props.chatMode === 'build' ? 'How can Legion help you today?' : 'What would you like to discuss?'
+          }
           translate="no"
           disabled={props.isStreaming}
         />
