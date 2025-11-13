@@ -16,13 +16,14 @@ import { Progress } from '~/components/ui/Progress';
 import OllamaModelInstaller from './OllamaModelInstaller';
 
 // Add type for provider names to ensure type safety
-type ProviderName = 'Ollama' | 'LMStudio' | 'OpenAILike';
+type ProviderName = 'Ollama' | 'LMStudio' | 'OpenAILike' | 'Midas';
 
 // Update the PROVIDER_ICONS type to use the ProviderName type
 const PROVIDER_ICONS: Record<ProviderName, IconType> = {
   Ollama: BsRobot,
   LMStudio: BsRobot,
   OpenAILike: TbBrandOpenai,
+  Midas: TbBrandOpenai,
 };
 
 // Update PROVIDER_DESCRIPTIONS to use the same type
@@ -30,6 +31,7 @@ const PROVIDER_DESCRIPTIONS: Record<ProviderName, string> = {
   Ollama: 'Run open-source models locally on your machine',
   LMStudio: 'Local model inference with LM Studio',
   OpenAILike: 'Connect to OpenAI-compatible API endpoints',
+  Midas: 'Connect to Midas endpoints',
 };
 
 // Add a constant for the Ollama API base URL
