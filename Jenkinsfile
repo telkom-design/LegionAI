@@ -23,6 +23,23 @@ PipelineDockerEntryV3([
 
         // contoh script untuk mengambil secret dari Vault dan menyimpannya ke dalam file .env:
         // useDotenv = vault.createDotenv("ins/instest/${env.BRANCH_NAME}/example")
+
+        DEFAULT_NUM_CTX = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'DEFAULT_NUM_CTX')
+        MIDAS_API_BASE_URL = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'MIDAS_API_BASE_URL')
+        MIDAS_API_KEY = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'MIDAS_API_KEY')
+        OPENAI_LIKE_API_BASE_URL = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'OPENAI_LIKE_API_BASE_URL')
+        OPENAI_LIKE_API_KEY = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'OPENAI_LIKE_API_KEY')
+        SESSION_SECRET = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'SESSION_SECRET')
+        VITE_AZURE_CLIENT_ID = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_AZURE_CLIENT_ID')
+        VITE_AZURE_CLIENT_SECRET = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_AZURE_CLIENT_SECRET')
+        VITE_AZURE_REDIRECT_URI = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_AZURE_REDIRECT_URI')
+        VITE_AZURE_TENANT_ID = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_AZURE_TENANT_ID')
+        VITE_BASE_URL= vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_BASE_URL')
+        VITE_DEFAULT_MODEL = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_DEFAULT_MODEL')
+        VITE_DEFAULT_PROVIDER = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_DEFAULT_PROVIDER')
+        VITE_DEFAULT_THEME = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_DEFAULT_THEME')
+        NODE_ENV = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'NODE_ENV')
+        VITE_LOG_LEVEL = vault.vault('dpe/legion-ui/release/legion-ui-legionai', 'VITE_LOG_LEVEL')
     },
 
     // Service Test
@@ -42,12 +59,27 @@ PipelineDockerEntryV3([
         // Wajib menggunakan variable buildCommand untuk menjalankan perintah docker build
         // Image yang dibuat wajib menggunakan tag dari variable imageTag
 
-        // contoh script untuk menggunakan file .env yang dibuat pada prerunScript dan membuat image
-        // useDotenv {
-        //     sh "${buildCommand} -t ${imageTag} ."
-        // }
-
-        sh "${buildCommand} -t ${imageTag} ."
+        // Build image sesuai target menggunakan buildCommand dari pipeline library
+        sh "${buildCommand} \
+            --build-arg ARGS_NODE_BUILD=${envStage} \
+            --build-arg MIDAS_API_BASE_URL=${MIDAS_API_BASE_URL} \
+            --build-arg MIDAS_API_KEY=${MIDAS_API_KEY} \
+            --build-arg DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
+            --build-arg OPENAI_LIKE_API_BASE_URL=${OPENAI_LIKE_API_BASE_URL} \
+            --build-arg OPENAI_LIKE_API_KEY=${OPENAI_LIKE_API_KEY} \
+            --build-arg SESSION_SECRET=${SESSION_SECRET} \
+            --build-arg VITE_AZURE_CLIENT_ID=${VITE_AZURE_CLIENT_ID} \
+            --build-arg VITE_AZURE_CLIENT_SECRET=${VITE_AZURE_CLIENT_SECRET} \
+            --build-arg VITE_AZURE_REDIRECT_URI=${VITE_AZURE_REDIRECT_URI} \
+            --build-arg VITE_AZURE_TENANT_ID=${VITE_AZURE_TENANT_ID} \
+            --build-arg VITE_BASE_URL=${VITE_BASE_URL} \
+            --build-arg VITE_DEFAULT_MODEL=${VITE_DEFAULT_MODEL} \
+            --build-arg VITE_DEFAULT_PROVIDER=${VITE_DEFAULT_PROVIDER} \
+            --build-arg VITE_DEFAULT_THEME=${VITE_DEFAULT_THEME} \
+            --build-arg RUNNING_IN_DOCKER=true \
+            --build-arg NODE_ENV=${NODE_ENV} \
+            --build-arg VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
+            --target bolt-ai-development -t ${imageTag} ."
     },
 
     // Post Run Script
