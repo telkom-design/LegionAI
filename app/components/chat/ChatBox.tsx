@@ -177,6 +177,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             'w-full pl-4 pt-4 pr-16 outline-none resize-none text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary bg-transparent text-sm',
             'transition-all duration-200',
             'hover:border-bolt-elements-focus',
+            'dark:placeholder-gray-400'
           )}
           onDragEnter={(e) => {
             e.preventDefault();
@@ -265,33 +266,39 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
         </ClientOnly>
         <div className="flex justify-between items-center text-sm p-4 pt-2">
           <div className="flex gap-1 items-center">
-            <ColorSchemeDialog designScheme={props.designScheme} setDesignScheme={props.setDesignScheme} />
-            <McpTools />
-            <IconButton title="Upload file" className="transition-all" onClick={() => props.handleFileUpload()}>
-              <div className="i-ph:paperclip text-xl"></div>
-            </IconButton>
-            <IconButton
-              title="Enhance prompt"
-              disabled={props.input.length === 0 || props.enhancingPrompt}
-              className={classNames('transition-all', props.enhancingPrompt ? 'opacity-100' : '')}
-              onClick={() => {
-                props.enhancePrompt?.();
-                toast.success('Prompt enhanced!');
-              }}
-            >
-              {props.enhancingPrompt ? (
-                <div className="i-svg-spinners:90-ring-with-bg text-bolt-elements-loader-progress text-xl animate-spin"></div>
-              ) : (
-                <div className="i-bolt:stars text-xl"></div>
-              )}
-            </IconButton>
+            {/* Disable these features to simplify Landing page text field prompt */}
 
-            <SpeechRecognitionButton
-              isListening={props.isListening}
-              onStart={props.startListening}
-              onStop={props.stopListening}
-              disabled={props.isStreaming}
-            />
+            {/*<ColorSchemeDialog designScheme={props.designScheme} setDesignScheme={props.setDesignScheme} />*/}
+
+            {/*<McpTools />*/}
+
+            {/*<IconButton title="Upload file" className="transition-all" onClick={() => props.handleFileUpload()}>*/}
+            {/*  <div className="i-ph:paperclip text-xl"></div>*/}
+            {/*</IconButton>*/}
+
+            {/*<IconButton*/}
+            {/*  title="Enhance prompt"*/}
+            {/*  disabled={props.input.length === 0 || props.enhancingPrompt}*/}
+            {/*  className={classNames('transition-all', props.enhancingPrompt ? 'opacity-100' : '')}*/}
+            {/*  onClick={() => {*/}
+            {/*    props.enhancePrompt?.();*/}
+            {/*    toast.success('Prompt enhanced!');*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  {props.enhancingPrompt ? (*/}
+            {/*    <div className="i-svg-spinners:90-ring-with-bg text-bolt-elements-loader-progress text-xl animate-spin"></div>*/}
+            {/*  ) : (*/}
+            {/*    <div className="i-bolt:stars text-xl"></div>*/}
+            {/*  )}*/}
+            {/*</IconButton>*/}
+
+            {/*<SpeechRecognitionButton*/}
+            {/*  isListening={props.isListening}*/}
+            {/*  onStart={props.startListening}*/}
+            {/*  onStop={props.stopListening}*/}
+            {/*  disabled={props.isStreaming}*/}
+            {/*/>*/}
+
             {props.chatStarted && (
               <IconButton
                 title="Discuss"
