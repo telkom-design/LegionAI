@@ -8,9 +8,25 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const allowedHosts: string[] = [process.env.VITE_BASE_URL, 'generator.digitaltelkom.id']
-  .filter((h): h is string => typeof h === 'string' && h.length > 0)
-  .map((h) => h.replace(/^https?:\/\/(www\.)?/, '').replace(/\/.*$/, ''));
+const allowedHosts = (() => {
+  const raw = process.env.VITE_BASE_URL;
+  if (!raw) return undefined;
+  const parts = raw.split(/[,\s]+/).filter(Boolean);
+  const hosts = parts
+    .map((p) => {
+      try {
+        return new URL(p).hostname;
+      } catch {
+        try {
+          return new URL(`http://${p}`).hostname;
+        } catch {
+          return p.replace(/^https?:\/\//, '').split('/')[0];
+        }
+      }
+    })
+    .filter(Boolean);
+  return hosts.length ? hosts : undefined;
+})();
 
 export default defineConfig((config) => {
   return {
@@ -21,14 +37,7 @@ export default defineConfig((config) => {
       target: 'esnext',
     },
     server: {
-      host: '0.0.0.0',
-      port: 5173,
-      strictPort: true,
-      allowedHosts,
-      hmr: {
-        clientPort: 5173,
-        host: process.env.VITE_BASE_URL || 'localhost',
-      },
+      ...(allowedHosts ? { allowedHosts } : {}),
     },
     plugins: [
       nodePolyfills({
@@ -91,7 +100,7 @@ function chrome129IssuePlugin() {
     name: 'chrome129IssuePlugin',
     configureServer(server: ViteDevServer) {
       server.middlewares.use((req, res, next) => {
-        const raw = req.headers['user-agent']?.match(/Chrom(e|ium)\/([0-9])\./);
+        const raw = req.headers['user-agent']?.match(/Chrom(e|ium)\/([0-9]+)\./);
 
         if (raw) {
           const version = parseInt(raw[2], 10);
