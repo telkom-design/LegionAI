@@ -1,7 +1,8 @@
 ARG BASE=playcourt/jenkins:nodejs20
 FROM ${BASE} AS base
 
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libc++1 libc++abi1 && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Install dependencies (this step is cached as long as the dependencies don't change)
