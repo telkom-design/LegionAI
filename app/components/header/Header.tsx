@@ -14,7 +14,7 @@ export function Header() {
 
   return (
     <header
-      className={classNames('flex items-center justify-between gap-4 px-4 border-b h-[var(--header-height)]', {
+      className={classNames('flex items-center justify-between gap-4 px-4 border-b h-[var(--header-height)] dark:bg-gray-950', {
         'border-transparent': !chat.started,
         'border-bolt-elements-borderColor': chat.started,
       })}

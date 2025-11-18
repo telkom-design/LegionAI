@@ -23,7 +23,7 @@ export const UserProfile = () => {
 
   return (
     <div className="relative">
-      <Button variant="secondary" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+      <Button className={'dark:bg-transparent dark:hover:bg-transparent'} variant="secondary" onClick={() => setIsMenuOpen(!isMenuOpen)}>
         <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
           {initials}
         </div>
@@ -61,7 +61,7 @@ export const UserProfile = () => {
 
                   setIsMenuOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 text-sm text-bolt-elements-textPrimary hover:bg-bolt-elements-background-depth-3 rounded transition-colors"
+                className="w-full text-left px-3 py-2 text-sm text-bolt-elements-textPrimary hover:bg-bolt-elements-background-depth-3 rounded transition-colors dark:bg-inherit dark:hover:bg-gray-700"
               >
                 Sign out
               </Button>

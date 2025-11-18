@@ -1,17 +1,14 @@
 import React from 'react';
 
 const EXAMPLE_PROMPTS = [
-  { text: 'Create a mobile app about bolt.diy' },
-  { text: 'Build a todo app in React using Tailwind' },
-  { text: 'Build a simple blog using Astro' },
-  { text: 'Create a cookie consent form using Material UI' },
-  { text: 'Make a space invaders game' },
-  { text: 'Make a Tic Tac Toe game in html, css and js only' },
+  { text: 'Create a landing page for a company profile' },
+  { text: 'Create a landing page for a promotional event' },
+  { text: 'Create a dashboard for transaction' },
 ];
 
 export function ExamplePrompts(sendMessage?: { (event: React.UIEvent, messageInput?: string): void | undefined }) {
   return (
-    <div id="examples" className="relative flex flex-col gap-9 w-full max-w-3xl mx-auto flex justify-center mt-6">
+    <div id="examples" className="relative flex flex-col gap-9 w-full max-w-4xl mx-auto flex justify-center mt-6">
       <div
         className="flex flex-wrap justify-center gap-2"
         style={{
@@ -25,7 +22,7 @@ export function ExamplePrompts(sendMessage?: { (event: React.UIEvent, messageInp
               onClick={(event) => {
                 sendMessage?.(event, examplePrompt.text);
               }}
-              className="border border-bolt-elements-borderColor rounded-full bg-gray-50 hover:bg-gray-100 dark:bg-gray-950 dark:hover:bg-gray-900 text-bolt-elements-textSecondary hover:text-bolt-elements-textPrimary px-3 py-1 text-xs transition-theme"
+              className="border border-bolt-elements-borderColor rounded-full bg-gray-50 hover:bg-gray-900 dark:bg-gray-950 dark:hover:bg-gray-700 dark:text-bolt-elements-textPrimary text-bolt-elements-textSecondary hover:text-white px-3 py-1 text-sm transition-theme"
             >
               {examplePrompt.text}
             </button>
