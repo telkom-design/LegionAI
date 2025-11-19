@@ -1,6 +1,7 @@
 ARG BASE=playcourt/jenkins:nodejs20
 FROM ${BASE} AS base
 
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 WORKDIR /app
 
 # Install dependencies (this step is cached as long as the dependencies don't change)
@@ -9,7 +10,7 @@ COPY package.json pnpm-lock.yaml ./
 #RUN npm install -g corepack@latest
 
 #RUN corepack enable pnpm && pnpm install
-RUN npm install -g pnpm && pnpm install
+RUN corepack enable && corepack prepare pnpm@latest --activate && pnpm install --prefer-frozen-lockfile=false
 
 # Copy the rest of your app's source code
 COPY . .
