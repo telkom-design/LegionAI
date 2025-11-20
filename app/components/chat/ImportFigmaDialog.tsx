@@ -16,6 +16,7 @@ function isValidFigmaUrl(url: string) {
     const u = new URL(url);
     const isFigma = u.hostname === 'www.figma.com';
     const hasNodeId = u.searchParams.has('node-id');
+
     return isFigma && hasNodeId;
   } catch {
     return false;
@@ -36,7 +37,9 @@ export const ImportFigmaDialog: React.FC<ImportFigmaDialogProps> = ({
     <Dialog.Root
       open={open}
       onOpenChange={(open) => {
-        if (!open) onClose();
+        if (!open) {
+          onClose();
+        }
       }}
     >
       <Dialog.Portal>
@@ -57,7 +60,7 @@ export const ImportFigmaDialog: React.FC<ImportFigmaDialogProps> = ({
             className="w-full border rounded px-3 py-2 mb-2"
             placeholder="Paste your Figma URL here"
             value={figmaUrl}
-            onChange={e => onUrlChange(e.target.value)}
+            onChange={(e) => onUrlChange(e.target.value)}
             disabled={isLoading}
           />
           {!isUrlValid && figmaUrl && (

@@ -1,5 +1,7 @@
-ARG BASE=node:20.18.0
+ARG BASE=playcourt/jenkins:nodejs20
 FROM ${BASE} AS base
+
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libc++1 libc++abi1 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

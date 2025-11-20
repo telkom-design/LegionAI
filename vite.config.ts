@@ -8,6 +8,26 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+const allowedHosts = (() => {
+  const raw = process.env.VITE_BASE_URL;
+  if (!raw) return undefined;
+  const parts = raw.split(/[,\s]+/).filter(Boolean);
+  const hosts = parts
+    .map((p) => {
+      try {
+        return new URL(p).hostname;
+      } catch {
+        try {
+          return new URL(`http://${p}`).hostname;
+        } catch {
+          return p.replace(/^https?:\/\//, '').split('/')[0];
+        }
+      }
+    })
+    .filter(Boolean);
+  return hosts.length ? hosts : undefined;
+})();
+
 export default defineConfig((config) => {
   return {
     define: {
@@ -15,6 +35,9 @@ export default defineConfig((config) => {
     },
     build: {
       target: 'esnext',
+    },
+    server: {
+      ...(allowedHosts ? { allowedHosts } : {}),
     },
     plugins: [
       nodePolyfills({
@@ -40,7 +63,7 @@ export default defineConfig((config) => {
           return null;
         },
       },
-      config.mode !== 'test' && remixCloudflareDevProxy(),
+      ...(config.mode !== 'test' && process.env.RUNNING_IN_DOCKER !== 'true' ? [remixCloudflareDevProxy()] : []),
       remixVitePlugin({
         future: {
           v3_fetcherPersist: true,
@@ -60,6 +83,7 @@ export default defineConfig((config) => {
       'OLLAMA_API_BASE_URL',
       'LMSTUDIO_API_BASE_URL',
       'TOGETHER_API_BASE_URL',
+      'MIDAS_API_BASE_URL',
     ],
     css: {
       preprocessorOptions: {
