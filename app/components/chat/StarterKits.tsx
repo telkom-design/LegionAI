@@ -69,8 +69,8 @@ const templates: Template[] = [
 
 const Header: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="mb-12 text-center sm:text-left">
-    <h1 className="text-[20px] font-bold text-[#525252] mb-2">{title}</h1>
-    <p className="text-[16px] text-[#525252] max-w-3xl">{description}</p>
+    <h1 className="text-[20px] font-bold text-[#525252] dark:text-bolt-elements-textPrimary mb-2">{title}</h1>
+    <p className="text-[16px] text-[#525252] dark:text-bolt-elements-textPrimary max-w-3xl">{description}</p>
   </div>
 );
 
@@ -80,7 +80,7 @@ const TemplateCard: React.FC<{ template: Template }> = ({ template }) => {
   return (
     <a href={template.link}>
       <div
-        className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full transform"
+        className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full transform dark:bg-gray-950"
         style={{
           transform: isHovered ? 'translateY(-5px)' : 'none',
           transition: 'transform 0.3s ease-in-out',
@@ -88,7 +88,7 @@ const TemplateCard: React.FC<{ template: Template }> = ({ template }) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative">
+        <div className="relative rounded-xl overflow-hidden">
           <img src={template.image} alt={template.title} className="w-full h-[225px] object-cover object-center" />
           {template.badge && (
             <div className="absolute bottom-3 left-3 bg-[#212121] text-white text-sm px-3 py-1 rounded-full">
@@ -97,9 +97,9 @@ const TemplateCard: React.FC<{ template: Template }> = ({ template }) => {
           )}
         </div>
         <div className="p-6 flex flex-col flex-grow">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">{template.title}</h3>
-          {template.description && <p className="text-gray-600 text-sm flex-grow">{template.description}</p>}
-          <p className="text-sm text-indigo-600 mb-3">{template.category}</p>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-bolt-elements-textPrimary mb-2">{template.title}</h3>
+          {template.description && <p className="text-gray-600 dark:text-bolt-elements-textPrimary text-sm flex-grow">{template.description}</p>}
+          <p className="text-sm text-indigo-600 dark:text-bolt-elements-textPrimary mb-3">{template.category}</p>
         </div>
       </div>
     </a>
@@ -128,7 +128,7 @@ const TemplateGrid: React.FC<{ templates: Template[] }> = ({ templates }) => {
 
 function StarterKits() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Header
           title="Templates & Starter Kits"

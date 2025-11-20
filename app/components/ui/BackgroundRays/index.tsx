@@ -3,7 +3,8 @@ import styles from './styles.module.scss';
 const BackgroundRays = () => {
   return (
     <div className={`${styles.rayContainer} `} id="background">
-      <img src="/background-whitelabel.png" className="w-full h-[800px] object-cover absolute" />
+      <div className={'w-full h-full bg-gray-50 dark:bg-gray-700'} />
+      {/*<img src="/background-whitelabel.png" className="w-full h-[800px] object-cover absolute" />*/}
       {/* <div className={`${styles.lightRay} ${styles.ray1}`}></div>
       <div className={`${styles.lightRay} ${styles.ray2}`}></div>
       <div className={`${styles.lightRay} ${styles.ray3}`}></div>
