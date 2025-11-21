@@ -1,4 +1,4 @@
-ARG BASE=playcourt/jenkins:nodejs20
+ARG BASE=playcourt/nodejs:22-jammy
 FROM ${BASE} AS base
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
