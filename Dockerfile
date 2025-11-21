@@ -1,7 +1,7 @@
 ARG BASE=playcourt/jenkins:nodejs20
 FROM ${BASE} AS base
 
-ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 WORKDIR /app
 
 # Install dependencies (this step is cached as long as the dependencies don't change)
