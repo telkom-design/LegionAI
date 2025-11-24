@@ -20,4 +20,8 @@ interface Env {
   AWS_BEDROCK_CONFIG: string;
   MIDAS_API_KEY: string;
   MIDAS_API_BASE_URL: string;
+  VITE_AZURE_CLIENT_ID: string;
+  VITE_AZURE_TENANT_ID: string;
+  VITE_AZURE_REDIRECT_URI: string;
+  VITE_AZURE_CLIENT_SECRET: string;
 }
