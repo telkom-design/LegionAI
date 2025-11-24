@@ -1,8 +1,8 @@
-import type { LoaderFunction, LoaderFunctionArgs } from '@remix-run/cloudflare';
+import { type AppLoadContext } from '@remix-run/cloudflare';
 import { getSession, commitSession } from '~/lib/auth/session.server';
 import { getOIDCConfig, exchangeCodeForTokens, validateIdToken, extractUserClaims } from '~/lib/auth/oidc.server';
 
-export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, context }: { request: Request; context: AppLoadContext }) => {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const stateParam = url.searchParams.get('state');
@@ -46,7 +46,8 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 
   try {
     const origin = new URL(request.url).origin;
-    const config = getOIDCConfig(origin);
+    const env = (context as any)?.cloudflare?.env as Record<string, string | undefined>;
+    const config = getOIDCConfig(origin, env);
     const tokens = await exchangeCodeForTokens(config, code, verifier);
     const payload = await validateIdToken(config, tokens.id_token, nonce);
     const user = extractUserClaims(payload);

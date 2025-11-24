@@ -8,8 +8,14 @@ type OIDCConfig = {
   scopes: string[];
 };
 
-const getEnv = (key: string, fallback?: string) => {
-  const v = process.env[key] || fallback;
+const getEnv = (
+  key: string,
+  fallback?: string,
+  env?: Record<string, string | undefined>,
+) => {
+  const fromContext = env ? (env[key] as string | undefined) : undefined;
+  const fromProcess = typeof process !== 'undefined' ? process.env?.[key] : undefined;
+  const v = fromContext ?? fromProcess ?? fallback;
 
   if (!v) {
     throw new Error(`Missing env: ${key}`);
@@ -18,14 +24,18 @@ const getEnv = (key: string, fallback?: string) => {
   return v;
 };
 
-export function getOIDCConfig(origin?: string): OIDCConfig {
-  const tenantId = getEnv('VITE_AZURE_TENANT_ID');
-  const clientId = getEnv('VITE_AZURE_CLIENT_ID');
+export function getOIDCConfig(
+  origin?: string,
+  env?: Record<string, string | undefined>,
+): OIDCConfig {
+  const tenantId = getEnv('VITE_AZURE_TENANT_ID', undefined, env);
+  const clientId = getEnv('VITE_AZURE_CLIENT_ID', undefined, env);
 
   const resolvedOrigin = origin || getOrigin();
-  const redirectUri = process.env.VITE_AZURE_REDIRECT_URI || `${resolvedOrigin}/auth/callback`;
+  const redirectUri =
+    (env?.VITE_AZURE_REDIRECT_URI as string | undefined) || `${resolvedOrigin}/auth/callback`;
 
-  const clientSecret = process.env.VITE_AZURE_CLIENT_SECRET;
+  const clientSecret = env?.VITE_AZURE_CLIENT_SECRET as string | undefined;
   const scopes = ['openid', 'profile', 'email', 'offline_access'];
 
   return { tenantId, clientId, clientSecret, redirectUri, scopes };

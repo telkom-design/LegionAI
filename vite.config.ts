@@ -5,7 +5,12 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
+// Load environment variables from multiple files
+dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env.production' });
+dotenv.config({ path: '.env' });
 dotenv.config();
 
 const allowedHosts = (() => {
