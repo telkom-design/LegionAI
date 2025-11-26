@@ -55,16 +55,30 @@ interface MessageState {
 }
 
 function cleanoutMarkdownSyntax(content: string) {
-  const codeBlockRegex = /^\s*```\w*\n([\s\S]*?)\n\s*```\s*$/;
-  const match = content.match(codeBlockRegex);
+  // Normalize CRLF to LF to simplify regex handling
+  let txt = content.replace(/\r\n/g, '\n');
 
-  // console.log('matching', !!match, content);
-
-  if (match) {
-    return match[1]; // Remove common leading 4-space indent
-  } else {
-    return content;
+  // Case 1: Entire content is a single fenced block (backticks or tildes)
+  // Capture inner content even if language/attrs are present on the opening fence
+  const fullFence = txt.match(/^\s*(?:```|~~~)[^\n]*\n([\s\S]*?)\n?(?:```|~~~)\s*$/);
+  if (fullFence) {
+    return fullFence[1];
   }
+
+  // Case 2: Leading opening fence line without a matching close (common during streaming)
+  // Strip the opening fence and any language spec up to the first newline
+  txt = txt.replace(/^\s*(?:```|~~~)[^\n]*\n?/, '');
+
+  // Case 3: Trailing closing fence line without a matching open (also possible in streaming)
+  txt = txt.replace(/\n?(?:```|~~~)\s*$/, '');
+
+  // Case 4: Mid-stream fence lines that appear inside the content when chunks split
+  // Remove standalone fence lines between content lines
+  txt = txt.replace(/\n\s*(?:```|~~~)[^\n]*\n/g, '\n');
+
+  // Note: we intentionally do NOT strip single backticks ` used in template literals
+  // or code syntax; only triple-fence lines are removed.
+  return txt;
 }
 
 function cleanEscapedTags(content: string) {
@@ -145,14 +159,22 @@ export class StreamingMessageParser {
 
             let content = currentAction.content.trim();
 
-            if ('type' in currentAction && currentAction.type === 'file') {
-              // Remove markdown code block syntax if present and file is not markdown
-              if (!currentAction.filePath.endsWith('.md')) {
+            if ('type' in currentAction) {
+              if (currentAction.type === 'file') {
+                // Remove markdown code block syntax if present and file is not markdown
+                if (!currentAction.filePath.endsWith('.md')) {
+                  content = cleanoutMarkdownSyntax(content);
+                  content = cleanEscapedTags(content);
+                }
+                // Ensure trailing newline for file contents
+                content += '\n';
+              } else if (currentAction.type === 'shell') {
+                // Strip any accidental markdown fences from shell commands
+                content = cleanoutMarkdownSyntax(content).trim();
+              } else if (currentAction.type === 'supabase') {
+                // Defensive: strip fences around SQL content
                 content = cleanoutMarkdownSyntax(content);
-                content = cleanEscapedTags(content);
               }
-
-              content += '\n';
             }
 
             currentAction.content = content;
