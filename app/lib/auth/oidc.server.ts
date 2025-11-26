@@ -13,9 +13,28 @@ const getEnv = (
   fallback?: string,
   env?: Record<string, string | undefined>,
 ) => {
+  // 1) Prefer runtime-provided env (Cloudflare Pages via Wrangler/dockerstart)
   const fromContext = env ? (env[key] as string | undefined) : undefined;
+
+  // 2) Fall back to Node process.env (npm run dev or other Node runtimes)
   const fromProcess = typeof process !== 'undefined' ? process.env?.[key] : undefined;
-  const v = fromContext ?? fromProcess ?? fallback;
+
+  // 3) Fall back to Vite SSR dev env (import.meta.env) when running remix vite:dev
+  // Guard access to import.meta for non-Vite environments
+  let fromVite: string | undefined;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const viteEnv = (typeof import.meta !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ((import.meta as any)?.env as Record<string, string | undefined> | undefined)
+      : undefined;
+
+    fromVite = viteEnv ? (viteEnv[key] as string | undefined) : undefined;
+  } catch {
+    fromVite = undefined;
+  }
+
+  const v = fromContext ?? fromProcess ?? fromVite ?? fallback;
 
   if (!v) {
     throw new Error(`Missing env: ${key}`);
@@ -23,19 +42,49 @@ const getEnv = (
 
   return v;
 };
-
-export function getOIDCConfig(
+ 
+// Optional env resolver: same precedence as getEnv but does not throw if missing
+const getEnvOptional = (
+  key: string,
+  env?: Record<string, string | undefined>,
+): string | undefined => {
+  const fromContext = env ? (env[key] as string | undefined) : undefined;
+  const fromProcess = typeof process !== 'undefined' ? process.env?.[key] : undefined;
+  let fromVite: string | undefined;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const viteEnv = (typeof import.meta !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? ((import.meta as any)?.env as Record<string, string | undefined> | undefined)
+      : undefined;
+    fromVite = viteEnv ? (viteEnv[key] as string | undefined) : undefined;
+  } catch {
+    fromVite = undefined;
+  }
+  return fromContext ?? fromProcess ?? fromVite ?? undefined;
+};
+ 
+ export function getOIDCConfig(
   origin?: string,
   env?: Record<string, string | undefined>,
 ): OIDCConfig {
-  const tenantId = getEnv('VITE_AZURE_TENANT_ID', undefined, env);
-  const clientId = getEnv('VITE_AZURE_CLIENT_ID', undefined, env);
-
+  // Prefer VITE_* (Wrangler/Vite), but fall back to AZURE_* (local/dev/Electron-alike)
+  const tenantId =
+    getEnvOptional('VITE_AZURE_TENANT_ID', env) ??
+    getEnv('AZURE_TENANT_ID', undefined, env);
+  const clientId =
+    getEnvOptional('VITE_AZURE_CLIENT_ID', env) ??
+    getEnv('AZURE_CLIENT_ID', undefined, env);
+ 
   const resolvedOrigin = origin || getOrigin();
-  const redirectUri =
-    (env?.VITE_AZURE_REDIRECT_URI as string | undefined) || `${resolvedOrigin}/auth/callback`;
-
-  const clientSecret = env?.VITE_AZURE_CLIENT_SECRET as string | undefined;
+  const redirectFromEnv =
+    getEnvOptional('VITE_AZURE_REDIRECT_URI', env) ??
+    getEnvOptional('AZURE_REDIRECT_URI', env);
+  const redirectUri = redirectFromEnv || `${resolvedOrigin}/auth/callback`;
+ 
+  const clientSecret =
+    getEnvOptional('VITE_AZURE_CLIENT_SECRET', env) ??
+    getEnvOptional('AZURE_CLIENT_SECRET', env);
   const scopes = ['openid', 'profile', 'email', 'offline_access'];
 
   return { tenantId, clientId, clientSecret, redirectUri, scopes };
@@ -140,6 +189,24 @@ export async function exchangeCodeForTokens(
     params.set('client_secret', config.clientSecret);
   }
 
+  // Dev-time diagnostics (no secrets printed)
+  if (process.env.NODE_ENV !== 'production') {
+    const debugParams = new URLSearchParams(params);
+    if (debugParams.has('client_secret')) debugParams.set('client_secret', '[REDACTED]');
+    // Avoid logging codes or verifiers to minimize exposure
+    debugParams.delete('code');
+    debugParams.delete('code_verifier');
+    // eslint-disable-next-line no-console
+    console.log('[OIDC] Token request debug', {
+      url: endpoints.token,
+      hasClientSecret: !!config.clientSecret,
+      tenantId: config.tenantId,
+      redirectUri: config.redirectUri,
+      scope: config.scopes.join(' '),
+      body: debugParams.toString(),
+    });
+  }
+ 
   const res = await fetch(endpoints.token, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -148,6 +215,17 @@ export async function exchangeCodeForTokens(
 
   if (!res.ok) {
     const text = await res.text();
+    // Extra diagnostics without leaking client_secret
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.warn('[OIDC] Token exchange failed', {
+        status: res.status,
+        hasClientSecret: !!config.clientSecret,
+        tenantId: config.tenantId,
+        redirectUri: config.redirectUri,
+        error: text.slice(0, 500),
+      });
+    }
     throw new Error(`Token exchange failed: ${res.status} ${text}`);
   }
 
