@@ -107,7 +107,6 @@
 }
 
 /* Color Tokens Dark Theme */
-:root,
 :root[data-theme='dark'] {
   --bolt-elements-borderColor: theme('colors.alpha.white.10');
   --bolt-elements-borderColorActive: theme('colors.accent.500');
