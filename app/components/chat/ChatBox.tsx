@@ -272,9 +272,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
 
             {/*<McpTools />*/}
 
-            {/*<IconButton title="Upload file" className="transition-all" onClick={() => props.handleFileUpload()}>*/}
-            {/*  <div className="i-ph:paperclip text-xl"></div>*/}
-            {/*</IconButton>*/}
+            <IconButton title="Upload file" className="transition-all" onClick={() => props.handleFileUpload()}>
+             <div className="i-ph:paperclip text-xl"></div>
+            </IconButton>
 
             {/*<IconButton*/}
             {/*  title="Enhance prompt"*/}
