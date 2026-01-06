@@ -6,11 +6,17 @@ interface WebContainerContext {
   loaded: boolean;
 }
 
-export const webcontainerContext: WebContainerContext = import.meta.hot?.data.webcontainerContext ?? {
-  loaded: false,
+// Handle both test and production environments
+const getWebContainerContext = (): WebContainerContext => {
+  if (typeof import.meta.hot === 'undefined') {
+    return { loaded: false };
+  }
+  return import.meta.hot?.data?.webcontainerContext ?? { loaded: false };
 };
 
-if (import.meta.hot) {
+export const webcontainerContext: WebContainerContext = getWebContainerContext();
+
+if (typeof import.meta.hot !== 'undefined' && import.meta.hot && import.meta.hot.data) {
   import.meta.hot.data.webcontainerContext = webcontainerContext;
 }
 
@@ -18,9 +24,16 @@ export let webcontainer: Promise<WebContainer> = new Promise(() => {
   // noop for ssr
 });
 
-if (!import.meta.env.SSR) {
+if (typeof import.meta.env !== 'undefined' && !import.meta.env.SSR) {
+  const getWebcontainer = () => {
+    if (typeof import.meta.hot !== 'undefined' && import.meta.hot && import.meta.hot.data) {
+      return import.meta.hot.data.webcontainer;
+    }
+    return undefined;
+  };
+
   webcontainer =
-    import.meta.hot?.data.webcontainer ??
+    getWebcontainer() ??
     Promise.resolve()
       .then(() => {
         return WebContainer.boot({
@@ -59,7 +72,7 @@ if (!import.meta.env.SSR) {
         return webcontainer;
       });
 
-  if (import.meta.hot) {
+  if (typeof import.meta.hot !== 'undefined' && import.meta.hot && import.meta.hot.data) {
     import.meta.hot.data.webcontainer = webcontainer;
   }
 }
