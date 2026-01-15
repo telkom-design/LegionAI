@@ -177,7 +177,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             'w-full pl-4 pt-4 pr-16 outline-none resize-none text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary bg-transparent text-sm',
             'transition-all duration-200',
             'hover:border-bolt-elements-focus',
-            'dark:placeholder-gray-400'
+            'dark:placeholder-gray-400',
           )}
           onDragEnter={(e) => {
             e.preventDefault();
@@ -273,7 +273,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
             {/*<McpTools />*/}
 
             <IconButton title="Upload file" className="transition-all" onClick={() => props.handleFileUpload()}>
-             <div className="i-ph:paperclip text-xl"></div>
+              <div className="i-ph:paperclip text-xl"></div>
             </IconButton>
 
             {/*<IconButton*/}
@@ -337,7 +337,7 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
               <kbd className="kdb px-1.5 py-0.5 rounded bg-bolt-elements-background-depth-2">Return</kbd> a new line
             </div>
           ) : null}
-          <SupabaseConnection />
+          {/* <SupabaseConnection /> */}
           <ExpoQrModal open={props.qrModalOpen} onClose={() => props.setQrModalOpen(false)} />
         </div>
       </div>
