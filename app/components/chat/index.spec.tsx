@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 // Prevent heavy client component from loading real stores
 vi.mock('./Chat.client', () => ({
   Chat: () => null,
@@ -14,6 +14,17 @@ import {
   StarterKits,
   SupabaseChatAlert,
 } from './index';
+
+beforeAll(() => {
+  Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+    value: vi.fn(() => ({} as any)),
+    writable: true,
+  });
+  Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
+    value: vi.fn(() => 'data:image/png;base64,FAKE'),
+    writable: true,
+  });
+});
 
 describe('Chat Components Index', () => {
   describe('Exports', () => {
