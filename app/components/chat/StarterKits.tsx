@@ -37,7 +37,7 @@ const templates: Template[] = [
     category: '',
     link: 'https://legion-phoenix-pattern-dashboard.vercel.app/user-management/list',
     badge: 'Legion',
-  },
+  }
 ];
 
 const Header: React.FC<{ title: string; description: string }> = ({ title, description }) => (
@@ -101,7 +101,7 @@ const TemplateGrid: React.FC<{ templates: Template[] }> = ({ templates }) => {
 
 function StarterKits() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
+    <div className="bg-white dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Header
           title="Templates & Starter Kits"

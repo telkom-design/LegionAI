@@ -56,12 +56,14 @@ export const LoginPage = () => {
   return (
     <div className="flex">
       <div className="w-full xl:w-1/2">
-        <div className="flex items-center justify-center overflow-auto" style={{ height: 'calc(100vh - 77px)' }}>
+        <div className="flex items-center justify-center overflow-auto bg-white dark:bg-gray-950" style={{ height: 'calc(100vh - 77px)' }}>
           <div className="w-full max-w-[464px] mx-auto px-6 py-11">
-            <img src="/logo-light.png" className="mb-8" alt="Logo" />
+            {/* <img src="/logo-light-alpha.png" className="mb-8" alt="Logo" /> */}
+            <img src="/logo-light-alpha.png" alt="logo" className="mb-8 inline-block dark:hidden" />
+            <img src="/logo-dark-alpha.png" alt="logo" className="mb-8 inline-block hidden dark:block" />
 
-            <h1 className="text-4xl font-bold mb-3">Sign In</h1>
-            <p className="text-base text-gray-500 mb-6">
+            <h1 className="text-4xl font-bold mb-3 dark:text-white">Sign In</h1>
+            <p className="text-base text-gray-500 mb-6 dark:text-gray-300">
               Welcome to Legion AI! Sign in to access your AI-powered development assistant
             </p>
 
@@ -114,9 +116,9 @@ export const LoginPage = () => {
           </div>
         </div>
 
-        <hr className="border-t border-gray-200" />
-        <div className="p-6 text-center bg-white">
-          <span className="text-gray-600">{currentYear} © AI Development Assistant by </span>
+        <hr className="border-t border-gray-200 dark:border-gray-800" />
+        <div className="p-6 text-center bg-white dark:bg-gray-950 text-sm text-gray-900">
+          <span className="text-gray-600 dark:text-gray-400">{currentYear} © AI Development Assistant by </span>
           <a
             href="https://legion.digitaltelkom.id/"
             target="_blank"
@@ -130,10 +132,10 @@ export const LoginPage = () => {
 
       <div className="hidden xl:block xl:w-1/2">
         <div
-          className="h-screen bg-cover bg-center bg-no-repeat bg-gradient-to-br from-blue-600 to-purple-700"
-          style={{
-            backgroundImage: "url('/background-whitelabel.png')",
-          }}
+          className="h-screen bg-cover bg-center bg-no-repeat bg-gradient-to-br from-white to-purple-700 dark:from-gray-900 dark:to-purple-900"
+          // style={{
+          //   backgroundImage: "url('/background-whitelabel.png')",
+          // }}
         >
           <div className="h-full w-full bg-gradient-to-br from-white/20 to-purple-700/80 flex items-center justify-center">
             <div className="text-white text-center px-12">

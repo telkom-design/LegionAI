@@ -31,8 +31,8 @@ export function Header() {
         </button>
         <a href="/" className="text-2xl font-semibold text-accent flex items-center">
           {/* <span className="i-bolt:logo-text?mask w-[46px] inline-block" /> */}
-          <img src="/logo-light-styled.png" alt="logo" className="w-[120px] inline-block dark:hidden" />
-          <img src="/logo-dark-styled.png" alt="logo" className="w-[120px] inline-block hidden dark:block" />
+          <img src="/logo-light-alpha.png" alt="logo" className="h-[35px] inline-block dark:hidden" />
+          <img src="/logo-dark-alpha.png" alt="logo" className="h-[35px] inline-block hidden dark:block" />
         </a>
       </div>
       {chat.started && (
