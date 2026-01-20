@@ -134,3 +134,38 @@ global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
 } as any;
+
+// Stub canvas APIs globally to prevent jsdom errors from components using <canvas>
+try {
+  Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+    value: vi.fn(() => ({
+      // minimal 2D context methods used by typical components
+      fillRect: vi.fn(),
+      clearRect: vi.fn(),
+      getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(0) })),
+      putImageData: vi.fn(),
+      createImageData: vi.fn(() => ({ data: new Uint8ClampedArray(0) })),
+      drawImage: vi.fn(),
+      save: vi.fn(),
+      restore: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      closePath: vi.fn(),
+      stroke: vi.fn(),
+      fill: vi.fn(),
+      measureText: vi.fn(() => ({ width: 0 })),
+    } as any)),
+    writable: true,
+  });
+  Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
+    value: vi.fn(() => 'data:image/png;base64,FAKE'),
+    writable: true,
+  });
+} catch {}
+
+try {
+  if (typeof (globalThis as any).createImageBitmap !== 'function') {
+    (globalThis as any).createImageBitmap = vi.fn(async () => ({}));
+  }
+} catch {}
