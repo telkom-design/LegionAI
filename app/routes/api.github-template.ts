@@ -143,6 +143,8 @@ async function fetchRepoContentsZip(repo: string, githubToken?: string) {
   // Fetch the zipball
   const zipResponse = await fetch(zipballUrl, {
     headers: {
+      Accept: 'application/octet-stream',
+      'User-Agent': 'bolt.diy-app',
       ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
     },
   });
@@ -218,7 +220,15 @@ export async function loader({ request, context }: { request: Request; context: 
     if (isCloudflareEnvironment(context)) {
       fileList = await fetchRepoContentsCloudflare(repo, githubToken);
     } else {
-      fileList = await fetchRepoContentsZip(repo, githubToken);
+      try {
+        fileList = await fetchRepoContentsZip(repo, githubToken);
+      } catch (zipErr) {
+        console.warn(
+          'Zipball method failed, falling back to Contents API:',
+          zipErr instanceof Error ? zipErr.message : String(zipErr),
+        );
+        fileList = await fetchRepoContentsCloudflare(repo, githubToken);
+      }
     }
 
     // Filter out .git files for both methods
