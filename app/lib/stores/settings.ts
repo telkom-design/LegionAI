@@ -24,7 +24,7 @@ export interface Shortcuts {
 }
 
 export const URL_CONFIGURABLE_PROVIDERS = ['Ollama', 'LMStudio', 'OpenAILike', 'Midas'];
-export const LOCAL_PROVIDERS = ['OpenAILike', 'LMStudio', 'Ollama', 'Midas'];
+export const LOCAL_PROVIDERS = ['Midas'];
 
 export type ProviderSetting = Record<string, IProviderConfig>;
 

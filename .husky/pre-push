@@ -1,0 +1,25 @@
+#!/bin/sh
+
+echo "🧪 Running pre-push hook to ensure tests pass before pushing... 🧪"
+
+# Load NVM if available (useful for managing Node.js versions)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Ensure `pnpm` is available
+echo "Checking if pnpm is available..."
+if ! command -v pnpm >/dev/null 2>&1; then
+    echo "❌ pnpm not found! Please ensure pnpm is installed and available in PATH."
+    exit 1
+fi
+
+# Run tests
+echo "Running unit tests..."
+if ! pnpm test; then
+    echo "❌ Tests failed! Please fix failing tests before pushing."
+    echo "You can run 'pnpm test:watch' to debug tests locally."
+    exit 1
+fi
+
+echo "✅ All tests passed! Proceeding with push... ✅"
+exit 0
